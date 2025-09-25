@@ -1,0 +1,20 @@
+[project]
+name = "solve"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "shoxxdj",email = "shoxx@shoxxdj.fr"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "tqdm (>=4.67.1,<5.0.0)",
+    "requests (>=2.32.5,<3.0.0)",
+    "cryptography (>=46.0.1,<47.0.0)",
+    "bs4 (>=0.0.2,<0.0.3)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
