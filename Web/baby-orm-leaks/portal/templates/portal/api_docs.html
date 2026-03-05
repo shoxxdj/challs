@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowCorp — API Docs</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0e0e0f;
+  --surface: #16161a;
+  --surface2:#1c1c22;
+  --border:  #2a2a30;
+  --accent:  #c8ff00;
+  --accent2: #00d4ff;
+  --orange:  #ff9500;
+  --red:     #ff4d4d;
+  --green:   #00e676;
+  --muted:   #444450;
+  --text:    #e8e8ec;
+  --sub:     #6b6b7a;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'Syne', sans-serif;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky;
+  top: 0;
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  z-index: 100;
+}
+
+.logo { font-family: var(--sans); font-weight: 800; font-size: .95rem; letter-spacing: .06em; }
+.logo span { color: var(--accent); }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .65rem;
+  color: var(--sub);
+  border: 1px solid var(--border);
+  padding: 5px 12px;
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.user-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+}
+
+.user-name { color: var(--text); }
+
+.version-badge {
+  font-size: .58rem;
+  letter-spacing: .15em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-title {
+  font-size: .55rem;
+  letter-spacing: .2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 0 20px;
+  margin-bottom: 6px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 20px;
+  font-size: .68rem;
+  color: var(--sub);
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+.sidebar-link:hover { color: var(--text); background: var(--surface); }
+.sidebar-link.active { color: var(--accent); border-left-color: var(--accent); background: #c8ff0008; }
+
+.method-pill {
+  font-size: .52rem;
+  padding: 1px 5px;
+  border-radius: 2px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.post   { background: #ff950020; color: var(--orange); border: 1px solid #ff950040; }
+.get    { background: #00e67620; color: var(--green);  border: 1px solid #00e67640; }
+.delete { background: #ff4d4d20; color: var(--red);    border: 1px solid #ff4d4d40; }
+
+/* ── CONTENT ── */
+.content {
+  padding: 40px 48px;
+  max-width: 860px;
+}
+
+/* ── PAGE HEADER ── */
+.page-hero {
+  margin-bottom: 40px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.api-title {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+
+.api-title span { color: var(--accent); }
+
+.api-desc {
+  font-size: .72rem;
+  color: var(--sub);
+  line-height: 1.7;
+  max-width: 560px;
+  margin-bottom: 16px;
+}
+
+.base-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 2px;
+  font-size: .72rem;
+}
+
+.base-url .label { color: var(--sub); font-size: .6rem; letter-spacing: .1em; }
+.base-url .url   { color: var(--accent2); }
+
+/* ── SECTION ── */
+.section { margin-bottom: 48px; }
+
+.section-title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── ENDPOINT CARD ── */
+.endpoint {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.endpoint-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s;
+}
+
+.endpoint-head:hover { background: var(--surface2); }
+
+.endpoint-path {
+  font-size: .78rem;
+  color: var(--text);
+  flex: 1;
+}
+
+.endpoint-summary {
+  font-size: .65rem;
+  color: var(--sub);
+}
+
+.chevron {
+  color: var(--muted);
+  font-size: .7rem;
+  transition: transform .2s;
+}
+
+.endpoint.open .chevron { transform: rotate(90deg); }
+
+.endpoint-body {
+  display: none;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.endpoint.open .endpoint-body { display: block; }
+
+.endpoint-section {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.endpoint-section:last-child { border-bottom: none; }
+
+.field-title {
+  font-size: .58rem;
+  letter-spacing: .18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ── SCHEMA TABLE ── */
+.schema-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .68rem;
+}
+
+.schema-table th {
+  text-align: left;
+  font-size: .55rem;
+  letter-spacing: .15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.schema-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #1c1c22;
+  vertical-align: top;
+}
+
+.schema-table tr:last-child td { border-bottom: none; }
+
+.schema-table tr:hover td { background: #1a1a20; }
+
+.field-name {
+  color: var(--accent2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.field-name.secret { color: var(--orange); }
+
+.field-type {
+  color: var(--sub);
+  font-size: .62rem;
+}
+
+.field-required {
+  font-size: .55rem;
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.req  { background: #ff950018; color: var(--orange); border: 1px solid #ff950040; }
+.opt  { background: #6b6b7a18; color: var(--muted);  border: 1px solid #6b6b7a30; }
+.priv { background: #ff4d4d18; color: var(--red);    border: 1px solid #ff4d4d30; }
+
+.field-desc { color: var(--sub); font-size: .65rem; line-height: 1.5; }
+.field-desc strong { color: var(--text); }
+
+/* ── CODE BLOCK ── */
+.code-wrap {
+  position: relative;
+}
+
+.code-label {
+  position: absolute;
+  top: 10px; right: 12px;
+  font-size: .55rem;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+pre {
+  background: #0a0a0b;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px;
+  font-size: .7rem;
+  line-height: 1.75;
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+.k  { color: #ff9500; }  /* key */
+.s  { color: #c8ff00; }  /* string value */
+.n  { color: #00d4ff; }  /* number */
+.b  { color: #ff4d4d; }  /* bool */
+.c  { color: #6b6b7a; font-style: italic; } /* comment */
+.hl { background: #ff950015; display: inline-block; width: 100%; margin: 0 -16px; padding: 0 16px; border-left: 2px solid var(--orange); } /* highlight */
+
+/* ── NOTICE ── */
+.notice {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 3px;
+  font-size: .68rem;
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.notice.warn  { background: #ff950012; border: 1px solid #ff950030; color: #c87a00; }
+.notice.info  { background: #00d4ff12; border: 1px solid #00d4ff30; color: #009ab8; }
+.notice-icon  { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
+.notice strong { color: var(--text); }
+
+/* ── RESPONSE EXAMPLE ── */
+.response-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 10px;
+}
+
+.rtab {
+  padding: 5px 14px;
+  font-size: .62rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  color: var(--sub);
+  background: var(--surface);
+  transition: all .15s;
+  border-right: none;
+}
+
+.rtab:last-child { border-right: 1px solid var(--border); }
+.rtab.active { background: var(--bg); color: var(--text); border-bottom-color: var(--bg); }
+.rtab.s200 { border-top: 2px solid var(--green); color: var(--green); }
+.rtab.s403 { border-top: 2px solid var(--red); color: var(--red); }
+
+/* ── AUTH SECTION ── */
+.auth-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.auth-box h4 {
+  font-size: .7rem;
+  color: var(--text);
+  margin-bottom: 8px;
+  font-family: var(--sans);
+}
+
+.auth-box p {
+  font-size: .68rem;
+  color: var(--sub);
+  line-height: 1.65;
+}
+
+.auth-box code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: .65rem;
+  color: var(--accent2);
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Shadow<span>Corp</span> <span style="color:var(--sub);font-size:.7rem;font-family:var(--mono);font-weight:400">/ API Docs</span></div>
+  <div class="header-right">
+    <div class="version-badge">v2.4.1</div>
+    <div class="user-badge">
+      <div class="dot"></div>
+      <span>Connecté :&nbsp;</span>
+      <span class="user-name" id="userDisplay">—</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Général</div>
+      <a class="sidebar-link active" href="#overview">Vue d'ensemble</a>
+      <a class="sidebar-link" href="#auth">Authentification</a>
+      <a class="sidebar-link" href="#errors">Codes d'erreur</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Endpoints</div>
+      <a class="sidebar-link" href="#ep-login">
+        <span class="method-pill post">POST</span> /api/login
+      </a>
+      <a class="sidebar-link" href="#ep-profile">
+        <span class="method-pill get">GET</span> /api/me
+      </a>
+      <a class="sidebar-link" href="#ep-employees">
+        <span class="method-pill get">GET</span> /api/employees
+      </a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Modèles</div>
+      <a class="sidebar-link" href="#model-employee">Employee</a>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- HERO -->
+    <div class="page-hero" id="overview">
+      <div class="api-title">ShadowCorp <span>Internal API</span></div>
+      <p class="api-desc">
+        Documentation interne de l'API REST du portail employés. Réservée aux développeurs et administrateurs système. Ne pas diffuser en dehors de ShadowCorp.
+      </p>
+      <div class="base-url">
+        <span class="label">Base URL</span>
+        <span class="url">http://&lt;host&gt;:8000</span>
+      </div>
+    </div>
+
+    <!-- AUTH -->
+    <div class="section" id="auth">
+      <div class="section-title">Authentification</div>
+
+      <div class="notice info">
+        <span class="notice-icon">ℹ</span>
+        <span>L'API utilise un système de filtres dynamiques. Le client envoie un objet <code style="color:var(--accent2)">filter</code> contenant les critères de recherche en base de données.</span>
+      </div>
+
+      <div class="auth-box">
+        <h4>Format de la requête</h4>
+        <p>Toutes les requêtes authentifiées utilisent <code>POST /api/login</code> avec un corps JSON contenant la clé <code>filter</code>. Les valeurs du filtre sont passées directement au moteur de requêtes.</p>
+      </div>
+    </div>
+
+    <!-- ENDPOINT LOGIN -->
+    <div class="section" id="ep-login">
+      <div class="section-title">Endpoints</div>
+
+      <div class="endpoint open" id="endpoint-login">
+        <div class="endpoint-head" onclick="toggleEndpoint('endpoint-login')">
+          <span class="method-pill post">POST</span>
+          <span class="endpoint-path">/api/login</span>
+          <span class="endpoint-summary">Authentifier un employé</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="endpoint-body">
+
+          <div class="endpoint-section">
+            <div class="field-title">Corps de la requête</div>
+            <div class="code-wrap">
+              <span class="code-label">application/json</span>
+              <pre>{
+  <span class="k">"filter"</span>: {
+    <span class="k">"username"</span>: <span class="s">"john.doe"</span>,
+    <span class="k">"password"</span>: <span class="s">"••••••••"</span>
+  }
+}</pre>
+            </div>
+          </div>
+
+          <div class="endpoint-section">
+            <div class="field-title">Réponses</div>
+
+            <div class="response-tabs">
+              <div class="rtab s200 active">200 OK</div>
+              <div class="rtab s403">403 Forbidden</div>
+            </div>
+
+            <div class="code-wrap">
+              <span class="code-label">Exemple 200</span>
+              <pre>{
+  <span class="k">"id"</span>:          <span class="n">2</span>,
+  <span class="k">"username"</span>:    <span class="s">"john.doe"</span>,
+  <span class="k">"email"</span>:       <span class="s">"john.doe@shadowcorp.com"</span>,
+  <span class="k">"full_name"</span>:   <span class="s">"John Doe"</span>,
+  <span class="k">"role"</span>:        <span class="s">"employee"</span>,
+  <span class="k">"department"</span>:  <span class="s">"Engineering"</span>,
+  <span class="k">"is_active"</span>:   <span class="b">true</span>
+}</pre>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ENDPOINT /api/me -->
+      <div class="endpoint" id="endpoint-me" style="margin-top:0" id="ep-profile">
+        <div class="endpoint-head" onclick="toggleEndpoint('endpoint-me')">
+          <span class="method-pill get">GET</span>
+          <span class="endpoint-path">/api/me</span>
+          <span class="endpoint-summary">Profil de l'employé connecté</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="endpoint-section">
+            <div class="notice warn">
+              <span class="notice-icon">⚠</span>
+              <span><strong>Admin uniquement :</strong> le champ <code style="color:var(--orange)">secret_token</code> n'est retourné que pour les comptes de rôle <code>admin</code>.</span>
+            </div>
+            <div class="code-wrap">
+              <span class="code-label">Exemple admin</span>
+              <pre>{
+  <span class="k">"id"</span>:             <span class="n">1</span>,
+  <span class="k">"username"</span>:       <span class="s">"admin"</span>,
+  <span class="k">"email"</span>:          <span class="s">"admin@shadowcorp.internal"</span>,
+  <span class="k">"full_name"</span>:      <span class="s">"System Administrator"</span>,
+  <span class="k">"role"</span>:           <span class="s">"admin"</span>,
+  <span class="k">"department"</span>:     <span class="s">"IT Security"</span>,
+  <span class="k">"is_active"</span>:      <span class="b">true</span>,
+<span class="hl">  <span class="k">"secret_token"</span>:   <span class="s">"&lt;token confidentiel&gt;"</span>    <span class="c">// champ interne, jamais exposé via /api/login</span></span>
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODEL EMPLOYEE -->
+    <div class="section" id="model-employee">
+      <div class="section-title">Modèle — Employee</div>
+
+      <div class="notice warn">
+        <span class="notice-icon">⚠</span>
+        <span><strong>Note interne :</strong> le champ <code style="color:var(--orange)">secret_token</code> est stocké en clair dans la base de données. Il ne doit jamais apparaître dans les réponses publiques de <code>/api/login</code>. Filtrage effectué dans <code>public_data</code>.</span>
+      </div>
+
+      <table class="schema-table">
+        <thead>
+          <tr>
+            <th>Champ</th>
+            <th>Type</th>
+            <th>Statut</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="field-name">id</span></td>
+            <td><span class="field-type">integer</span></td>
+            <td><span class="field-required opt">lecture seule</span></td>
+            <td class="field-desc">Identifiant unique auto-incrémenté</td>
+          </tr>
+          <tr>
+            <td><span class="field-name">username</span></td>
+            <td><span class="field-type">string</span></td>
+            <td><span class="field-required req">requis</span></td>
+            <td class="field-desc">Identifiant de connexion. Format : <code style="font-size:.62rem;color:var(--accent2)">prenom.nom</code></td>
+          </tr>
+          <tr>
+            <td><span class="field-name">email</span></td>
+            <td><span class="field-type">string</span></td>
+            <td><span class="field-required req">requis</span></td>
+            <td class="field-desc">Adresse email professionnelle</td>
+          </tr>
+          <tr>
+            <td><span class="field-name">full_name</span></td>
+            <td><span class="field-type">string</span></td>
+            <td><span class="field-required req">requis</span></td>
+            <td class="field-desc">Nom complet affiché dans le portail</td>
+          </tr>
+          <tr>
+            <td><span class="field-name">password</span></td>
+            <td><span class="field-type">string</span></td>
+            <td><span class="field-required priv">hashé</span></td>
+            <td class="field-desc">Hash PBKDF2-SHA256. <strong>Jamais retourné par l'API.</strong></td>
+          </tr>
+          <tr>
+            <td><span class="field-name">role</span></td>
+            <td><span class="field-type">enum</span></td>
+            <td><span class="field-required opt">optionnel</span></td>
+            <td class="field-desc">Rôle de l'employé : <code style="font-size:.62rem;color:var(--accent2)">employee</code> · <code style="font-size:.62rem;color:var(--accent2)">manager</code> · <code style="font-size:.62rem;color:var(--accent2)">admin</code></td>
+          </tr>
+          <tr>
+            <td><span class="field-name">department</span></td>
+            <td><span class="field-type">string</span></td>
+            <td><span class="field-required opt">optionnel</span></td>
+            <td class="field-desc">Service de rattachement</td>
+          </tr>
+          <tr>
+            <td><span class="field-name">is_active</span></td>
+            <td><span class="field-type">boolean</span></td>
+            <td><span class="field-required opt">optionnel</span></td>
+            <td class="field-desc">Compte actif. Les comptes inactifs ne peuvent pas se connecter.</td>
+          </tr>
+          <tr>
+            <td><span class="field-name">date_joined</span></td>
+            <td><span class="field-type">datetime</span></td>
+            <td><span class="field-required opt">lecture seule</span></td>
+            <td class="field-desc">Date de création du compte</td>
+          </tr>
+          <tr style="background:#ff950008">
+            <td><span class="field-name secret">secret_token</span></td>
+            <td><span class="field-type">string</span></td>
+            <td><span class="field-required priv">interne</span></td>
+            <td class="field-desc">
+              <strong>Jeton confidentiel propre à chaque compte.</strong>
+              Stocké en clair. Utilisé pour les intégrations système internes.
+              Non inclus dans <code style="font-size:.62rem;color:var(--accent2)">public_data</code> — ne doit jamais être exposé côté client.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ERRORS -->
+    <div class="section" id="errors">
+      <div class="section-title">Codes d'erreur</div>
+      <table class="schema-table">
+        <thead>
+          <tr><th>Code</th><th>Signification</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color:var(--green)">200</span></td>
+            <td class="field-desc">Authentification réussie — retourne les champs publics de l'employé</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--red)">400</span></td>
+            <td class="field-desc">Corps JSON invalide ou filtre manquant / champ ORM inconnu</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--red)">403</span></td>
+            <td class="field-desc">Identifiants invalides — aucun employé ne correspond au filtre</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// Affiche le nom de l'utilisateur connecté
+const stored = sessionStorage.getItem('user');
+if (stored) {
+  try {
+    const u = JSON.parse(stored);
+    document.getElementById('userDisplay').textContent = u.username + ' (' + u.role + ')';
+  } catch (_) {}
+} else {
+  // Pas de session → rediriger vers le login
+  // window.location.href = '/';
+}
+
+function toggleEndpoint(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// Smooth scroll pour les liens sidebar
+document.querySelectorAll('.sidebar-link[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+</script>
+</body>
+</html>

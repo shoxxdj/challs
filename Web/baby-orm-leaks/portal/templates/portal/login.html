@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowCorp — Portail Employés</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0e0e0f;
+  --surface: #16161a;
+  --border: #2a2a30;
+  --accent: #c8ff00;
+  --muted: #444450;
+  --text: #e8e8ec;
+  --sub: #6b6b7a;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  z-index: 10;
+}
+
+.logo { font-family: var(--sans); font-weight: 800; font-size: .95rem; letter-spacing: .06em; }
+.logo span { color: var(--accent); }
+.tagline { font-size: .58rem; letter-spacing: .2em; color: var(--muted); text-transform: uppercase; }
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  padding: 38px 34px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  animation: fadein .45s ease both;
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: -1px; right: -1px;
+  width: 24px; height: 24px;
+  border-top: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+}
+
+.card-title { font-family: var(--sans); font-weight: 700; font-size: 1.25rem; margin-bottom: 3px; }
+.card-sub   { font-size: .65rem; color: var(--sub); margin-bottom: 30px; }
+
+.field { margin-bottom: 16px; }
+
+label {
+  display: block;
+  font-size: .58rem;
+  letter-spacing: .18em;
+  color: var(--sub);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: .8rem;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color .15s;
+  border-radius: 2px;
+}
+
+input:focus { border-color: var(--accent); }
+input::placeholder { color: var(--muted); }
+
+.btn {
+  width: 100%;
+  margin-top: 8px;
+  background: var(--accent);
+  color: #0e0e0f;
+  border: none;
+  padding: 11px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: opacity .15s;
+}
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.response {
+  margin-top: 16px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  font-size: .68rem;
+  line-height: 1.75;
+  background: var(--bg);
+  border-radius: 2px;
+  display: none;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.response.show     { display: block; }
+.response.ok       { border-color: var(--accent); color: var(--accent); }
+.response.err      { color: var(--sub); }
+
+.footer {
+  margin-top: 18px;
+  font-size: .58rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.8;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Shadow<span>Corp</span></div>
+  <div class="tagline">Portail Employés v2.4.1</div>
+</header>
+
+<div class="card">
+  <div class="card-title">Connexion</div>
+  <div class="card-sub">Accès réservé au personnel autorisé</div>
+
+  <div class="field">
+    <label>Identifiant</label>
+    <input type="text" id="username" placeholder="prenom.nom" autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="field">
+    <label>Mot de passe</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="off">
+  </div>
+
+  <button class="btn" id="btn" onclick="doLogin()">Se connecter</button>
+  <div class="response" id="resp"></div>
+</div>
+
+<div class="footer">
+  ShadowCorp Internal Systems — Unauthorized access is monitored
+</div>
+
+<script>
+async function doLogin() {
+  const btn  = document.getElementById('btn');
+  const resp = document.getElementById('resp');
+  const user = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value.trim();
+
+  if (!user || !pass) return;
+
+  btn.disabled = true;
+  resp.className = 'response';
+  resp.style.display = 'none';
+
+  const filter = { username: user, password: pass };
+
+  try {
+    const r = await fetch('/api/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ filter }),
+    });
+    const data = await r.json();
+
+    if (r.ok) {
+      // Store session info and redirect to API docs
+      sessionStorage.setItem('user', JSON.stringify(data));
+      window.location.href = '/api/docs';
+      return;
+    }
+
+    resp.textContent = 'HTTP ' + r.status + '\n\n' + JSON.stringify(data, null, 2);
+    resp.className   = 'response show err';
+    resp.style.display = 'block';
+  } catch (e) {
+    resp.textContent = 'Network error: ' + e.message;
+    resp.className   = 'response show err';
+    resp.style.display = 'block';
+  }
+
+  btn.disabled = false;
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>
