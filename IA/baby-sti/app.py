@@ -1,22 +1,9 @@
-"""
-STI Lab — Special Token Injection CTF
-=====================================
-
-Application "support client" volontairement vulnerable a la Special Token
-Injection (STI). L'assistant LLM dispose d'un outil `execute_sql_query` cense
-ne servir qu'a lire la base (SELECT). Le backend execute AVEUGLEMENT tout
-tool_call renvoye par le modele (aucun controle d'autorisation cote serveur).
-
-Un attaquant anonyme peut donc, via STI, forcer le modele a emettre un
-<tool_call> qui INSERT un compte dans la table `users`, puis se connecter.
-
-Ne JAMAIS deployer ce code en production. C'est un lab.
-"""
-
 import json
 import os
 import re
 import sqlite3
+import inspect
+import sys
 
 import requests
 from flask import (
@@ -250,6 +237,20 @@ def api_chat():
 def api_reset():
     session["chat_history"] = []
     return jsonify({"ok": True})
+
+@app.route("/source",methods=["GET"])
+def source():
+    filename = inspect.getfile(sys.modules[__name__])
+    with open(filename, "r", encoding="utf-8") as f:
+        source = f.read()
+        lines=source.splitlines(keepends=True)
+        source="".join(
+            line[:len(line) - len(line.lstrip())] + "FLAG = {REMOVED}\n"
+            if line.lstrip().startswith("FLAG")
+            else line
+            for line in lines
+        )
+        return f"<pre>{source}</pre>"
 
 
 if __name__ == "__main__":
