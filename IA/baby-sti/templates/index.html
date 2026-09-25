@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShopBot — Espace client</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: #0b1020; color: #e6e9f2; min-height: 100vh;
+  }
+  header {
+    padding: 18px 24px; border-bottom: 1px solid #22283d;
+    display: flex; align-items: center; gap: 10px;
+  }
+  header .logo { font-weight: 700; letter-spacing: .5px; color: #7dd3fc; }
+  header .tag { font-size: 12px; color: #8892b0; }
+  .wrap {
+    max-width: 1000px; margin: 32px auto; padding: 0 20px;
+    display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px;
+  }
+  @media (max-width: 820px) { .wrap { grid-template-columns: 1fr; } }
+  .card {
+    background: #121933; border: 1px solid #22283d; border-radius: 14px;
+    padding: 22px;
+  }
+  h2 { margin: 0 0 4px; font-size: 18px; }
+  .sub { color: #8892b0; font-size: 13px; margin-bottom: 16px; }
+  label { display:block; font-size: 13px; color:#aab3d0; margin: 12px 0 5px; }
+  input[type=text], input[type=password] {
+    width:100%; padding:11px 12px; border-radius:9px; border:1px solid #2a3350;
+    background:#0d1428; color:#e6e9f2; font-size:14px;
+  }
+  button {
+    margin-top:16px; width:100%; padding:11px; border:0; border-radius:9px;
+    background:#2563eb; color:white; font-weight:600; font-size:14px; cursor:pointer;
+  }
+  button:hover { background:#1d4ed8; }
+  .err { background:#3b1220; border:1px solid #7f1d1d; color:#fecaca;
+         padding:9px 12px; border-radius:8px; font-size:13px; margin-top:12px; }
+  .chat-log {
+    height: 340px; overflow-y:auto; background:#0d1428; border:1px solid #2a3350;
+    border-radius:10px; padding:12px; font-size:14px; display:flex; flex-direction:column; gap:10px;
+  }
+  .msg { padding:9px 12px; border-radius:10px; max-width:88%; white-space:pre-wrap; word-wrap:break-word; }
+  .msg.user { align-self:flex-end; background:#1e3a8a; }
+  .msg.bot  { align-self:flex-start; background:#1a2440; border:1px solid #2a3350; }
+  .msg.sys  { align-self:center; color:#8892b0; font-size:12px; background:transparent; }
+  .row { display:flex; gap:8px; margin-top:12px; }
+  .row input { flex:1; }
+  .row button { margin:0; width:auto; padding:11px 18px; }
+  .hint { font-size:12px; color:#6b7394; margin-top:10px; }
+  code { background:#0d1428; padding:1px 5px; border-radius:5px; color:#7dd3fc; }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">◆ ShopBot</span>
+  <span class="tag">espace client &amp; support IA</span>
+</header>
+
+<div class="wrap">
+  <!-- Connexion -->
+  <div class="card">
+    <h2>Connexion</h2>
+    <div class="sub">Accedez a votre espace personnel.</div>
+    <form method="post" action="/login">
+      <label>Identifiant</label>
+      <input type="text" name="username" autocomplete="off" required>
+      <label>Mot de passe</label>
+      <input type="password" name="password" required>
+      <button type="submit">Se connecter</button>
+    </form>
+    {% if error %}<div class="err">{{ error }}</div>{% endif %}
+    <div class="hint">Pas de bouton "creer un compte". L'inscription se fait
+      uniquement en interne par le support.</div>
+  </div>
+
+  <!-- Support IA -->
+  <div class="card">
+    <h2>Assistant support</h2>
+    <div class="sub">Posez une question sur nos produits.</div>
+    <div id="log" class="chat-log">
+      <div class="msg bot">Bonjour ! Je suis l'assistant ShopBot. Je peux
+        consulter notre catalogue (produits, prix, stock). Que puis-je faire pour vous ?</div>
+    </div>
+    <div class="row">
+      <input id="inp" type="text" placeholder="Votre message…" autocomplete="off">
+      <button onclick="send()">Envoyer</button>
+    </div>
+    <div class="hint">Astuce debug : l'assistant utilise un outil interne
+      <code>execute_sql_query</code>.</div>
+  </div>
+</div>
+
+<script>
+const log = document.getElementById('log');
+const inp = document.getElementById('inp');
+
+function add(text, cls) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.textContent = text;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function send() {
+  const text = inp.value.trim();
+  if (!text) return;
+  add(text, 'user');
+  inp.value = '';
+  add('…', 'sys');
+  const thinking = log.lastChild;
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: text})
+    });
+    const j = await r.json();
+    thinking.remove();
+    add(j.reply || '(vide)', 'bot');
+  } catch (e) {
+    thinking.remove();
+    add('[erreur reseau]', 'bot');
+  }
+}
+inp.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+</script>
+</body>
+</html>

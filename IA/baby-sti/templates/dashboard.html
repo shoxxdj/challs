@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShopBot — Espace client</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif;
+         background:#0b1020; color:#e6e9f2; min-height:100vh;
+         display:flex; align-items:center; justify-content:center; }
+  .card { background:#121933; border:1px solid #22283d; border-radius:16px;
+          padding:34px; max-width:560px; text-align:center; }
+  h1 { margin:0 0 6px; }
+  .who { color:#8892b0; margin-bottom:22px; }
+  .flag { font-family: ui-monospace, monospace; font-size:18px;
+          background:#052e1a; border:1px solid #14532d; color:#86efac;
+          padding:16px; border-radius:10px; word-break:break-all; }
+  a { color:#7dd3fc; text-decoration:none; font-size:13px; }
+  .mt { margin-top:20px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>✅ Connexion reussie</h1>
+    <div class="who">Bienvenue, <b>{{ user }}</b>. Vous etes authentifie.</div>
+    <div>Votre flag :</div>
+    <div class="flag mt">{{ flag }}</div>
+    <div class="mt"><a href="/logout">Se deconnecter</a></div>
+  </div>
+</body>
+</html>
