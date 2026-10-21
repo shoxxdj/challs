@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Package Checker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23c2410c'/><path d='M8 16l5 5 11-11' stroke='white' stroke-width='3' fill='none'/></svg>">
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#262b36; --fg:#e6e8ee; --mut:#8b93a5; --acc:#f97316; --ok:#34d399; --err:#f87171; --warn:#fbbf24; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:12px}
+  .logo{width:28px;height:28px;border-radius:7px;background:var(--acc);display:grid;place-items:center;font-weight:700}
+  header h1{font-size:17px;margin:0}
+  header span{color:var(--mut);font-size:13px;margin-left:auto}
+  main{max-width:900px;margin:40px auto;padding:0 20px}
+  h2{font-size:26px;margin:0 0 6px}
+  p.lead{color:var(--mut);margin:0 0 24px}
+  form{display:flex;gap:10px}
+  input{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--fg);padding:12px 14px;border-radius:8px;font:inherit;font-family:ui-monospace,Menlo,monospace}
+  input:focus{outline:2px solid var(--acc);border-color:transparent}
+  button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:0 22px;font:inherit;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .hint{color:var(--mut);font-size:13px;margin:10px 2px 24px}
+  .hint code{background:var(--panel);padding:1px 6px;border-radius:4px;cursor:pointer}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mut)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--mut)}
+  .dot.running{background:var(--warn);animation:p 1s infinite}.dot.ok{background:var(--ok)}.dot.fail{background:var(--err)}
+  @keyframes p{50%{opacity:.3}}
+  #log{margin:0;padding:14px;height:420px;overflow:auto;font:12.5px/1.45 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+  .l-info{color:#93c5fd}.l-warn{color:var(--warn)}.l-stderr{color:#cbd5e1}.l-stdout{color:var(--fg)}
+  #result{padding:12px 14px;border-top:1px solid var(--line);font-weight:600;display:none}
+  #result.ok{display:block;color:var(--ok)}#result.fail{display:block;color:var(--err)}
+  footer{color:var(--mut);font-size:12px;text-align:center;margin:40px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">✓</div><h1>Package Checker</h1>
+  <span id="ver">connecting…</span>
+</header>
+<main>
+  <h2>Does your crate install?</h2>
+  <p class="lead">Paste the git URL of a Rust crate. We run a clean <code>cargo install</code> and stream the build logs, so you know your users won't hit a broken install.</p>
+  <form id="f">
+    <input id="url" type="text" placeholder="https://github.com/user/crate" autocomplete="off" spellcheck="false" required>
+    <button id="go">Check</button>
+  </form>
+  <div class="hint">Try <code>https://github.com/sharkdp/fd</code> or <code>https://github.com/BurntSushi/ripgrep</code>. Only http(s) repositories are supported.</div>
+  <div class="card">
+    <div class="bar"><span class="dot" id="dot"></span><span id="state">idle</span></div>
+    <pre id="log"></pre>
+    <div id="result"></div>
+  </div>
+</main>
+<footer>Package Checker · builds run in an isolated container and are deleted after each check</footer>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const socket = io();
+const log = $('log');
+function setState(cls, txt){ $('dot').className = 'dot ' + cls; $('state').textContent = txt; }
+function add(stream, line){
+  const s = document.createElement('span');
+  s.className = 'l-' + stream; s.textContent = line + '\n';
+  log.appendChild(s); log.scrollTop = log.scrollHeight;
+}
+socket.on('hello', (h) => { $('ver').textContent = 'v' + h.version; });
+socket.on('connect_error', () => { $('ver').textContent = 'offline'; });
+socket.on('status', (s) => setState('running', 'running · job ' + s.job));
+socket.on('log', (m) => add(m.stream, m.line));
+socket.on('rejected', (m) => { add('warn', 'Rejected: ' + m.error); setState('fail', 'rejected'); $('go').disabled = false; });
+socket.on('done', (d) => {
+  $('go').disabled = false;
+  setState(d.ok ? 'ok' : 'fail', d.ok ? 'success' : 'failed');
+  const r = $('result'); r.className = d.ok ? 'ok' : 'fail'; r.textContent = d.message;
+});
+$('url').addEventListener('click', () => {});
+document.querySelectorAll('.hint code').forEach(c => c.onclick = () => { $('url').value = c.textContent; });
+$('f').addEventListener('submit', (e) => {
+  e.preventDefault();
+  log.textContent = ''; $('result').className = ''; $('result').textContent = '';
+  $('go').disabled = true; setState('running', 'queued');
+  socket.emit('check', { url: $('url').value });
+});
+</script>
+</body>
+</html>

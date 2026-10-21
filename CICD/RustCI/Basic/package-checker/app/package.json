@@ -1,0 +1,12 @@
+{
+  "name": "package-checker",
+  "version": "1.4.2",
+  "private": true,
+  "description": "Checks that a Rust crate hosted in a git repository installs cleanly",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node test/validate.test.js" },
+  "dependencies": {
+    "express": "4.21.2",
+    "socket.io": "4.8.1"
+  }
+}

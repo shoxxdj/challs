@@ -1,0 +1,23 @@
+services:
+  package-checker:
+    build: .
+    image: package-checker:1.4.2
+    container_name: package-checker
+    restart: unless-stopped
+    ports:
+      - "8090:3000"
+    environment:
+      MAX_CONCURRENT: "3"
+    # lets players reach a Gitea/git server they run on their own host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cap_drop: [ALL]
+    cap_add: [SETUID, SETGID]
+    security_opt:
+      - no-new-privileges:false   # entrypoint needs setpriv; app itself runs with no_new_privs
+    pids_limit: 512
+    mem_limit: 2g
+    cpus: 2
+    tmpfs:
+      - /home/checker/jobs:exec,uid=1001,gid=1001,size=1g
+    networks: [default]
